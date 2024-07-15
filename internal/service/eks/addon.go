@@ -90,6 +90,23 @@ func resourceAddon() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"pod_identity_associations": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						names.AttrRoleARN: {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: verify.ValidARN,
+						},
+						"service_account": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"preserve": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -146,6 +163,10 @@ func resourceAddonCreate(ctx context.Context, d *schema.ResourceData, meta inter
 
 	if v, ok := d.GetOk("configuration_values"); ok {
 		input.ConfigurationValues = aws.String(v.(string))
+	}
+
+	if v, ok := d.GetOk("pod_identity_associations"); ok {
+		input.PodIdentityAssociations = expandAddonPodIdentityAssociations(v.([]interface{}))
 	}
 
 	if v, ok := d.GetOk("resolve_conflicts"); ok {
@@ -226,6 +247,7 @@ func resourceAddonRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("configuration_values", addon.ConfigurationValues)
 	d.Set(names.AttrCreatedAt, aws.ToTime(addon.CreatedAt).Format(time.RFC3339))
 	d.Set("modified_at", aws.ToTime(addon.ModifiedAt).Format(time.RFC3339))
+	d.Set("pod_identity_associations", addon.PodIdentityAssociations)
 	d.Set("service_account_role_arn", addon.ServiceAccountRoleArn)
 
 	setTagsOut(ctx, addon.Tags)
@@ -328,6 +350,25 @@ func resourceAddonDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	return diags
+}
+
+func expandAddonPodIdentityAssociations(tfList []interface{}) []types.AddonPodIdentityAssociations {
+	addonPodIdentityAssociations := []types.AddonPodIdentityAssociations{}
+
+	if len(tfList) > 0 {
+		for _, v := range tfList {
+			tfMap := v.(map[string]interface{})
+
+			association := types.AddonPodIdentityAssociations{
+				RoleArn:        aws.String(tfMap[names.AttrRoleARN].(string)),
+				ServiceAccount: aws.String(tfMap["service_account"].(string)),
+			}
+
+			addonPodIdentityAssociations = append(addonPodIdentityAssociations, association)
+		}
+	}
+
+	return addonPodIdentityAssociations
 }
 
 func findAddonByTwoPartKey(ctx context.Context, conn *eks.Client, clusterName, addonName string) (*types.Addon, error) {

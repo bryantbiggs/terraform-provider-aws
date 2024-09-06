@@ -105,7 +105,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.27.4
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.49.1
 	github.com/aws/aws-sdk-go-v2/service/efs v1.33.4
-	github.com/aws/aws-sdk-go-v2/service/eks v1.51.2
+	github.com/aws/aws-sdk-go-v2/service/eks v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2/service/elasticache v1.43.2
 	github.com/aws/aws-sdk-go-v2/service/elasticbeanstalk v1.28.4
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.28.4
@@ -378,3 +378,5 @@ require (
 )
 
 replace github.com/hashicorp/terraform-plugin-log => github.com/gdavison/terraform-plugin-log v0.0.0-20230928191232-6c653d8ef8fb
+
+replace github.com/aws/aws-sdk-go-v2/service/eks => /Users/brybiggs/Documents/gitlab/hybridNodesSdk/service/eks
